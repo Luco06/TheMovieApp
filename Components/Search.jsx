@@ -9,23 +9,28 @@ import { getFilmFromApiWithSearchText } from '../API/TMDBApi';
  * pour faire appel au state, le this.NomDeLaVariable est obligatoire, sinon React ne sais pas ou cherche cette variable
  */
 class Search extends React.Component {
+    page = 0
+    totalPages = 0
+    searchedText = ""
     state = {
         _films: [],
-        searchedText: "",
         isLoading: false
     }
     _loadFilm() {
-        if (this.state.searchedText.length > 0) {
+        if (this.searchedText.length > 0) {
             this.setState({ isLoading: true })
-            getFilmFromApiWithSearchText(this.state.searchedText).then(data => {
+            getFilmFromApiWithSearchText(this.searchedText, this.page+1).then(data => {
+                this.page = data.page
+                this.totalPages = data.total_pages
                 this.setState({ 
-                    _films: data.results,
-                    isLoading: false })
+                    _films: [ ...this.state._films, ...data.results],
+                    isLoading: false 
+                })
             })
         }
     }
     _searchTextInputChanged(text) {
-        this.state.searchedText = text;
+        this.searchedText = text;
     }
     _displayLoading() {
         if (this.state.isLoading) {
@@ -36,6 +41,15 @@ class Search extends React.Component {
             )
         }
     }
+    _searchFilm(){
+        this.page = 0
+        this.totalPages = 0
+        this.setState({
+            _films :[],
+        }, () => {
+            this._loadFilm()
+        })
+    }
     /**
      * onSubmitEditing permet d'utiliser la touche entrer du clavier 
      */
@@ -45,12 +59,18 @@ class Search extends React.Component {
             <View style={styles.main_container}>
                 <TextInput style={styles.textinput}
                     onChangeText={(text) => this._searchTextInputChanged(text)}
-                    placeholder="Titre du film" onSubmitEditing={() => this._loadFilm()}
+                    placeholder="Titre du film" onSubmitEditing={() => this._searchFilm()}
                 ></TextInput>
-                <Button title="Rechercher" onPress={() => this._loadFilm()}></Button>
+                <Button title="Rechercher" onPress={() => this._searchFilm()}></Button>
                 <FlatList
                     data={this.state._films}
                     keyExtractor={(item) => item.id.toString()}
+                    onEndReachedThreshold={0.5}
+                    onEndReached={() =>{
+                        if(this.page < this.totalPages){
+                            this._loadFilm()
+                        }
+                    }}
                     renderItem={({ item }) => <FilmItem film={item}/>}
                 />
                 {this._displayLoading()}
