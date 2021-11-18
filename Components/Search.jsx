@@ -19,12 +19,12 @@ class Search extends React.Component {
     _loadFilm() {
         if (this.searchedText.length > 0) {
             this.setState({ isLoading: true })
-            getFilmFromApiWithSearchText(this.searchedText, this.page+1).then(data => {
+            getFilmFromApiWithSearchText(this.searchedText, this.page + 1).then(data => {
                 this.page = data.page
                 this.totalPages = data.total_pages
-                this.setState({ 
-                    _films: [ ...this.state._films, ...data.results],
-                    isLoading: false 
+                this.setState({
+                    _films: [...this.state._films, ...data.results],
+                    isLoading: false
                 })
             })
         }
@@ -41,11 +41,11 @@ class Search extends React.Component {
             )
         }
     }
-    _searchFilm(){
+    _searchFilm() {
         this.page = 0
         this.totalPages = 0
         this.setState({
-            _films :[],
+            _films: [],
         }, () => {
             this._loadFilm()
         })
@@ -66,12 +66,12 @@ class Search extends React.Component {
                     data={this.state._films}
                     keyExtractor={(item) => item.id.toString()}
                     onEndReachedThreshold={0.5}
-                    onEndReached={() =>{
-                        if(this.page < this.totalPages){
+                    onEndReached={() => {
+                        if (this.page < this.totalPages) {
                             this._loadFilm()
                         }
                     }}
-                    renderItem={({ item }) => <FilmItem film={item}/>}
+                    renderItem={({ item }) => <FilmItem film={item} />}
                 />
                 {this._displayLoading()}
             </View>
